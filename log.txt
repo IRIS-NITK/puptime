@@ -1,0 +1,4 @@
+# Logfile created on 2020-05-24 15:05:02 +0530 by logger.rb/66358
+D, [2020-05-24T15:05:02.896624 #186922] DEBUG -- : Once the log becomes at least one
+D, [2020-05-24T15:05:02.897656 #186922] DEBUG -- : day old, it will be renamed and a
+D, [2020-05-24T15:05:03.593038 #186922] DEBUG -- : new log.txt file will be created.
