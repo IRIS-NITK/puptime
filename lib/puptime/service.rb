@@ -8,6 +8,7 @@ module Puptime
     autoload :TCP,   "puptime/service/tcp"
     autoload :DNS,   "puptime/service/dns"
     autoload :Redis, "puptime/service/redis"
+    autoload :HTTP,  "puptime/service/http"
 
     # Missing parameter
     class ParamMissingError < StandardError

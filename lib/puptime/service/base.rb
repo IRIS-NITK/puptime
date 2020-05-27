@@ -37,7 +37,9 @@ module Puptime
       ((?:[0-9A-Fa-f]{1,4}(?::[0-9A-Fa-f]{1,4})*)?) ::
       ((?:[0-9A-Fa-f]{1,4}:)*)
       (\d+)\.(\d+)\.(\d+)\.(\d+)
-      \z))))/
+      \z))))/.freeze
+
+      URL_REGEX = %r{^(http://www\.|https://www\.|http://|https://)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(/.*)?$}ix.freeze
 
       def initialize(name, group, type, interval, options = {})
         @name = name
@@ -56,6 +58,10 @@ module Puptime
 
       def self.validate_ip_addr(ip_addr)
         raise ValidationError, "IP Address format invalid #{@name}" unless (Puptime::Service::Base::IP_REGEX.match? ip_addr) || (ip_addr == "localhost")
+      end
+
+      def self.validate_url(url)
+        raise ValidationError, "URL invalid #{@name}" unless Puptime::Service::Base::URL_REGEX.match? url
       end
 
     private

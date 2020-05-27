@@ -51,7 +51,7 @@ module Puptime
     end
 
     def process_notification
-      message = @queue.pop(non_block = false) # Suspend the thread when queue is empty
+      message = @queue.pop(non_block = false) # rubocop:disable Lint/UselessAssignment # Suspend the thread when queue is empty
       Puptime::Notifier::Email.new(message, @configuration.detect {|x| x["channel"] == "email" }).send
       Puptime::Notifier::Teams.new(message, @configuration.detect {|x| x["channel"] == "teams" }).send
     end

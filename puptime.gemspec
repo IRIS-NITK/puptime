@@ -35,6 +35,7 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency "redis"
   spec.add_runtime_dependency "rufus-scheduler", "~> 3.0"
   spec.add_runtime_dependency "thor", "~> 0.20"
+  spec.add_runtime_dependency "typhoeus", "~> 1.4"
 
   spec.add_development_dependency "rubocop", "~> 0.84"
   spec.add_development_dependency "rubocop-performance", "~> 1.6.0"

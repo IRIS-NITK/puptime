@@ -6,7 +6,7 @@ module Puptime
   class ServiceSet
     attr_reader :services
 
-    AVAILABLE_SERVICES = %w[TCP DNS Redis]
+    AVAILABLE_SERVICES = %w[TCP DNS Redis HTTP]
     MANDATORY_KEYS = %w[name type interval options]
 
     # Raised if service isn't available

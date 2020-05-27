@@ -14,5 +14,4 @@ module Puptime
   autoload :Service,           "puptime/service"
   autoload :ServiceSet,        "puptime/service_set"
   autoload :VERSION,           "puptime/version"
-
 end

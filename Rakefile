@@ -54,6 +54,25 @@ namespace :db do
       ActiveRecord::SchemaDumper.dump(ActiveRecord::Base.connection, file)
     end
   end
+
+  desc "Cleanup database. Truncates all data"
+  task :clean do
+    ActiveRecord::Base.establish_connection(db_config)
+    tables = ActiveRecord::Base.connection.tables - %w[schema_migrations ar_internal_metadata]
+    case db_config["adapter"]
+    when "mysql", "postgresql"
+      tables.each do |table|
+        ActiveRecord::Base.connection.execute("TRUNCATE #{table}")
+      end
+    when "sqlite", "sqlite3"
+      tables.each do |table|
+        ActiveRecord::Base.connection.execute("DELETE FROM #{table}")
+        ActiveRecord::Base.connection.execute("DELETE FROM sqlite_sequence where name='#{table}'")
+      end
+      ActiveRecord::Base.connection.execute("VACUUM")
+    end
+    puts "Database cleaned."
+  end
 end
 
 namespace :g do

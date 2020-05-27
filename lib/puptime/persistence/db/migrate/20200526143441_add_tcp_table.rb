@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # TCP table
 class AddTcpTable < ActiveRecord::Migration[5.2]
   def self.up
