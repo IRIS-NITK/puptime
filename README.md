@@ -102,6 +102,15 @@ Create a configuration file as follows
 monitors:
   -
     group: pavan
+    interval: 3s
+    name: tcp-1
+    options:
+      ip_addr: localhost
+      port: 3306
+    type: TCP
+    
+  -
+    group: pavan
     interval: 5s
     name: dns-1
     options:
