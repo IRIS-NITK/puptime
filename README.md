@@ -36,7 +36,7 @@ Please Do!!
 The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
 
 ## File Structure
-
+```text
 ├── bin
 │   ├── console
 │   ├── puptime
@@ -91,6 +91,7 @@ The gem is available as open source under the terms of the [MIT License](https:/
 └── test
     ├── puptime_test.rb
     └── test_helper.rb
+```
 
 Create a configuration file as follows
 
