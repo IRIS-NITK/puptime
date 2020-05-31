@@ -25,16 +25,16 @@ module Puptime
 
       def run
         @scheduler_job_id = @scheduler.every @interval, overlap: false, job: true do
-          ping(@tcp_service)
+          ping
         end
       end
 
-      def ping(tcp_service)
-        if Net::Ping::TCP.new(tcp_service.ip_addr, tcp_service.port).ping?
-          ping_success_callbacks("pinging #{tcp_service.address} at #{Time.now} successful")
+      def ping
+        if Net::Ping::TCP.new(@tcp_service.ip_addr, @tcp_service.port).ping?
+          ping_success_callbacks("pinging #{@tcp_service.address} at #{Time.now} successful")
         else
           raise_error_level
-          ping_failure_callbacks("pinging #{tcp_service.address} at #{Time.now} failed")
+          ping_failure_callbacks("pinging #{@tcp_service.address} at #{Time.now} failed")
         end
       end
 

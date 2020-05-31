@@ -24,16 +24,16 @@ module Puptime
 
       def run
         @scheduler_job_id = @scheduler.every @interval, overlap: false, job: true do
-          ping(@redis_service)
+          ping
         end
       end
 
-      def ping(redis_service)
+      def ping
         if _ping
-          ping_success_callbacks("pinging #{redis_service.resource_name} at #{Time.now} successful")
+          ping_success_callbacks("pinging #{@redis_service.resource_name} at #{Time.now} successful")
         else
           raise_error_level
-          ping_failure_callbacks("pinging #{redis_service.resource_name} at #{Time.now} failed")
+          ping_failure_callbacks("pinging #{@redis_service.resource_name} at #{Time.now} failed")
         end
       end
 

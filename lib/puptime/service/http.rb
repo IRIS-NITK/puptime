@@ -25,12 +25,12 @@ module Puptime
 
       def run
         @scheduler_job_id = @scheduler.every @interval, overlap: false, job: true do
-          ping(@http_service)
+          ping
         end
       end
 
-      def ping(http_service)
-        request = build_request(http_service)
+      def ping
+        request = build_request(@http_service)
         response = request.run
         validate_response(response)
       end

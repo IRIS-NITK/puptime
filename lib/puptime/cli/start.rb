@@ -35,11 +35,6 @@ module Puptime
         serviceset
       end
 
-      # def setup_database
-      #   db_config = YAML.load_file("lib/puptime/persistence/config/database.yml")["development"]
-      #   ActiveRecord::Base.establish_connection(db_config)
-      # end
-
       def setup_serviceset
         @config = read_configuration
         prepare_serviceset

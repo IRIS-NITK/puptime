@@ -32,33 +32,33 @@ module Puptime
 
       def run
         @scheduler_job_id = @scheduler.every @interval, overlap: false, job: true do
-          ping(@dns_service)
+          ping
         end
       end
 
-      def ping_by_record_type(dns_service)
-        case dns_service.record_type
+      def ping_by_record_type
+        case @dns_service.record_type
         when :A
-          a_ping(dns_service.resource)
+          a_ping(@dns_service.resource)
         when :AAAA
-          aaaa_ping(dns_service.resource)
+          aaaa_ping(@dns_service.resource)
         when :MX
-          mx_ping(dns_service.resource)
+          mx_ping(@dns_service.resource)
         when :NS
-          ns_ping(dns_service.resource)
+          ns_ping(@dns_service.resource)
         when :CNAME
-          cname_ping(dns_service.resource)
+          cname_ping(@dns_service.resource)
         else
           raise ArgumentError, "Undefined DNS Record Type"
         end
       end
 
-      def ping(dns_service)
-        if _ping(dns_service)
-          ping_success_callbacks("pinging #{dns_service.resource_name} at #{Time.now} successful")
+      def ping
+        if _ping
+          ping_success_callbacks("pinging #{@dns_service.resource_name} at #{Time.now} successful")
         else
           raise_error_level
-          ping_failure_callbacks("pinging #{dns_service.resource_name} at #{Time.now} failed")
+          ping_failure_callbacks("pinging #{@dns_service.resource_name} at #{Time.now} failed")
         end
       end
 
@@ -109,12 +109,12 @@ module Puptime
         Resolv::DNS.new.getresources(resource, RECORD_TYPES[:CNAME]).map {|r| r.name.to_s }
       end
 
-      def _ping(dns_service)
-        if dns_service.match
-          ping_by_record_type(dns_service).any?
+      def _ping
+        if @dns_service.match
+          ping_by_record_type.any?
         else
-          ping_result = ping_by_record_type(dns_service)
-          ping_result.sort == dns_service.results.sort
+          ping_result = ping_by_record_type
+          ping_result.sort == @dns_service.results.sort
         end
       end
     end
