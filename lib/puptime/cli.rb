@@ -48,10 +48,8 @@ module Puptime
       command ||= "readme"
       page = manpage(command)
 
-      if page && which("man")
-        exec "man", page
-      elsif page
-        puts File.read("#{page}.txt")
+      if page
+        print File.read(page)
       else
         super
       end
@@ -60,13 +58,8 @@ module Puptime
   private
 
     def manpage(command)
-      page = File.expand_path("../man/puptime-#{command}", __FILE__)
+      page = File.expand_path("../../../man/puptime-#{command}.md", __FILE__)
       return page if File.file?(page)
-
-      1.upto(8) do |section|
-        page = File.expand_path("../man/puptime-#{command}.#{section}", __FILE__)
-        return page if File.file?(page)
-      end
 
       nil
     end
