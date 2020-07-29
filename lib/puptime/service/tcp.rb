@@ -50,6 +50,8 @@ module Puptime
       end
 
       def save_tcp_record_to_db(message)
+        return
+        # TODO: Fix persistence
         persistence_service = Puptime::Persistence::Service.find_by(name: @name)
         persistence_service.services_tcp.create(message: message) if persistence_service
       end

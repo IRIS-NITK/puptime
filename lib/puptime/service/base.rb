@@ -67,6 +67,8 @@ module Puptime
     private
 
       def save_service_to_db
+        return
+        # TODO: Fix persistence
         Puptime::Persistence::Service.create(name: @name, group: @group,
                                              service_type: @type, interval: @interval)
       end
