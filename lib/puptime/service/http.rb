@@ -56,7 +56,11 @@ module Puptime
 
       def validate_response(response)
         return unless validate_code(response)
-        return if @http_service.options["has-text"] || validate_text(response)
+
+        if @http_service.options["has-text"]
+          validate_text(response)
+          return
+        end
 
         log.info "ping successful to #{@http_service.resource_name}"
       end
