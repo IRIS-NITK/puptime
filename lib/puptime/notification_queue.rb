@@ -58,7 +58,7 @@ module Puptime
 
     def validate(configuration)
       channels = configuration.map {|x| x["channel"] }
-      (CHANNELS & channels) == CHANNELS
+      (channels - CHANNELS).empty?
     end
   end
 end
