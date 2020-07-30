@@ -12,7 +12,7 @@ module Puptime
       end
 
       def send
-        log.info "Sending teams to #{@message}"
+        info service_name: "MS Teams"
       end
     end
   end

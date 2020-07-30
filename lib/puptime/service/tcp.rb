@@ -31,24 +31,14 @@ module Puptime
 
       def ping
         if Net::Ping::TCP.new(@tcp_service.ip_addr, @tcp_service.port).ping?
-          ping_success_callbacks("pinging #{@tcp_service.address} at #{Time.now} successful")
+          info service_name: @tcp_service.address
         else
           raise_error_level
-          ping_failure_callbacks("pinging #{@tcp_service.address} at #{Time.now} failed")
+          error service_name: @tcp_service.address
         end
       end
 
     private
-
-      def ping_success_callbacks(message)
-        log.info message
-      end
-
-      def ping_failure_callbacks(message)
-        log.info message
-        save_tcp_record_to_db(message)
-      end
-
       def save_tcp_record_to_db(message)
         return
         # TODO: Fix persistence

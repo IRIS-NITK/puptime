@@ -3,6 +3,7 @@
 require "puptime"
 require "puptime/cli/stop"
 require "active_record"
+require "logger"
 
 module Puptime
   # CLI class
@@ -36,7 +37,7 @@ module Puptime
         @config = read_configuration
 
         set_pid
-        setup_logging
+        Puptime::Logging.setup_logger(log_filepath: @config['log_file'], log_level: Logger::INFO)
         prepare_serviceset
       end
 
@@ -44,11 +45,6 @@ module Puptime
         Puptime::Configuration.new(file: @options[:config_file]).config
       rescue Puptime::Configuration::MissingFileError => e
         raise Puptime::CLI::Error.new(@cli, e.message)
-      end
-
-      def setup_logging
-        log_file = File.expand_path(@config['log_file'] || "~/.puptime/server.log").freeze
-        Puptime::Logging.setup_logger(log_file)
       end
 
       def set_pid
