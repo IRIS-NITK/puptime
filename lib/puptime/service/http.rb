@@ -55,23 +55,26 @@ module Puptime
       end
 
       def validate_response(response)
-        if validate_code(response)
-          if @http_service.options["has-text"]
-            if validate_text(response)
-              log.info "ping successful to #{@http_service.resource_name} with text match"
-            else
-              raise_error_level
-              log.info "ping successful to #{@http_service.resource_name} NO text match"
-            end
-          end
+        return unless validate_code(response)
+        unless @http_service.options["has-text"]
+                log.info "ping successful to #{@http_service.resource_name}"
+                return
+        end
+
+        if validate_text(response)
+          log.info "ping successful to #{@http_service.resource_name} with text match"
         else
           raise_error_level
-          log.info "ping failed to #{@http_service.resource_name}"
+          log.info "ping successful to #{@http_service.resource_name} NO text match"
         end
       end
 
       def validate_code(response)
-        response.response_code == @http_service.code
+        return true if response.response_code == @http_service.code
+
+        raise_error_level
+        log.info "ping failed to #{@http_service.resource_name}"
+        false
       end
 
       def validate_text(response)
