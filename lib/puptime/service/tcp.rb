@@ -8,46 +8,25 @@ module Puptime
     # TCP service
     class TCP < Puptime::Service::Base
       include Puptime::Logging
-      attr_reader :tcp_service
-
-      TCPService = Struct.new(:ip_addr, :port) do
-        def address
-          ip_addr + ":" + port.to_s
-        end
-      end
+      attr_reader :port, :ip_addr
 
       def initialize(name, id, type, interval, options = {})
         super
         raise ParamMissingError, @name unless options["port"] && options["ip_addr"]
 
-        @tcp_service = parse_tcp_params(options)
+        @ip_addr, @port = parse_tcp_params(options)
       end
 
       def run
-        @scheduler_job_id = @scheduler.every @interval, overlap: false, job: true do
+        @scheduler.every @interval, overlap: false, job: true do
           ping
         end
       end
 
-      def ping
-        if Net::Ping::TCP.new(@tcp_service.ip_addr, @tcp_service.port).ping?
-          ping_success_callbacks("pinging #{@tcp_service.address} at #{Time.now} successful")
-        else
-          raise_error_level
-          ping_failure_callbacks("pinging #{@tcp_service.address} at #{Time.now} failed")
-        end
+      def resource_name
+        @ip_addr + ":" + @port.to_s
       end
-
     private
-
-      def ping_success_callbacks(message)
-        log.info message
-      end
-
-      def ping_failure_callbacks(message)
-        log.info message
-        save_tcp_record_to_db(message)
-      end
 
       def save_tcp_record_to_db(message)
         persistence_service = Puptime::Persistence::Service.find_by(name: @name)
@@ -56,7 +35,11 @@ module Puptime
 
       def parse_tcp_params(options)
         Puptime::Service::Base.validate_ip_addr(options["ip_addr"])
-        TCPService.new(options["ip_addr"], options["port"])
+        return options["ip_addr"], options["port"]
+      end
+
+      def _ping
+        Net::Ping::TCP.new(@ip_addr, @port).ping?
       end
     end
   end

@@ -20,7 +20,6 @@ module Puptime
     def self.setup_logger(logfile)
       @filepath = logfile
       @logger = Logger.new(logfile, 2, 10_485_760)
-      # @logger = Logger.new(STDOUT)
       @logger.level = Logger::INFO
       @logger.datetime_format = "%d/%b/%Y:%H:%M:%S %z"
       @logger.formatter = proc do |severity, datetime, _progname, msg|

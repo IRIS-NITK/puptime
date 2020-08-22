@@ -1,10 +1,15 @@
 # frozen_string_literal: true
 
 require "yaml"
+require "after_do"
+require "pp"
 
 module Puptime
   #:nodoc:
   class Configuration
+    include Puptime::Logging
+    extend AfterDo
+
     attr_accessor :config
     DEFAULT_FILE = File.expand_path("~/.puptime/config.yml").freeze
 
@@ -20,17 +25,22 @@ module Puptime
       file ||= DEFAULT_FILE
       raise MissingFileError, file if file && !File.exist?(file)
 
-      @config = parse_config(file)
-      @config.freeze
+      @config = parse_config(file).freeze
+    end
+
+    after :initialize do |*, config|
+      config.log_update
+    end
+
+    def log_update
+      log.info "Configuration updated!"
+      log.info @config.pretty_inspect
     end
 
   private
 
     def parse_config(file)
       YAML.load_file(file)
-    rescue Psych::SyntaxError => e
-      puts "YAML config parse error: #{e}"
-      exit(100)
     end
   end
 end

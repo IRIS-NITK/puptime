@@ -8,56 +8,37 @@ module Puptime
     # TCP service
     class Redis < Puptime::Service::Base
       include Puptime::Logging
-      attr_reader :redis_service
-
-      RedisService = Struct.new(:ip_addr, :port, :db, :password) do
-        def resource_name
-          ip_addr + ":" + port.to_s + "/" + db.to_s
-        end
-      end
+      attr_reader :ip_addr, :port, :db, :password
 
       def initialize(name, id, type, interval, options = {})
         super
         validate_params(options)
-        @redis_service = parse_redis_params(options)
+        @ip_addr, @port, @db, @password = parse_redis_params(options)
+      end
+
+      def resource_name
+        @ip_addr + ":" + @port.to_s + "/" + @db.to_s
       end
 
       def run
-        @scheduler_job_id = @scheduler.every @interval, overlap: false, job: true do
+        @scheduler.every @interval, overlap: false, job: true do
           ping
         end
       end
 
-      def ping
-        if _ping
-          ping_success_callbacks("pinging #{@redis_service.resource_name} at #{Time.now} successful")
-        else
-          raise_error_level
-          ping_failure_callbacks("pinging #{@redis_service.resource_name} at #{Time.now} failed")
-        end
-      end
-
     private
-
-      def ping_success_callbacks(message)
-        log.info message
-      end
-
-      def ping_failure_callbacks(message)
-        log.info message
-      end
 
       def validate_params(options)
         raise ParamMissingError, @name unless (options["ip_addr"]) && options["port"] && options["db"]
       end
 
       def parse_redis_params(options)
-        RedisService.new(options["ip_addr"], options["port"].to_i, options["db"].to_i, options["password"])
+        return options["ip_addr"], options["port"].to_i, options["db"].to_i, options["password"]
       end
 
       def _ping
         begin
-          redis = ::Redis.new(host: @redis_service.ip_addr, port: @redis_service.port, db: @redis_service.db, password: @redis_service.password, timeout: 1)
+          redis = ::Redis.new(host: @ip_addr, port: @port, db: @db, password: @password, timeout: 1)
           redis.ping
           true
         rescue StandardError

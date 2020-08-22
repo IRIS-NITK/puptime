@@ -8,70 +8,50 @@ module Puptime
     # TCP service
     class DNS < Puptime::Service::Base
       include Puptime::Logging
-      attr_reader :dns_service
+      attr_reader :record_type, :resource, :results, :match
 
       RECORD_TYPES = { 'A': Resolv::DNS::Resource::IN::A, 'AAAA': Resolv::DNS::Resource::IN::AAAA,
                        'MX': Resolv::DNS::Resource::IN::MX, 'CNAME': Resolv::DNS::Resource::IN::CNAME,
                        'NS': Resolv::DNS::Resource::IN::NS }
 
-      DNSService = Struct.new(:resource, :record_type, :results, :match) do
-        def resource_name
-          if match
-            resource + "#" + record_type.to_s + " ==> " + results
-          else
-            resource + "#" + record_type.to_s + "exists"
-          end
-        end
-      end
-
       def initialize(name, id, type, interval, options = {})
         super
         validate_params(options)
-        @dns_service = parse_dns_params(options)
+        @resource, @record_type, @results, @match = parse_dns_params(options)
+      end
+
+      def resource_name
+        if @match
+          @resource + "#" + @record_type.to_s + " ==> " + @results.to_s
+        else
+          @resource + "#" + @record_type.to_s + "exists"
+        end
       end
 
       def run
-        @scheduler_job_id = @scheduler.every @interval, overlap: false, job: true do
+        @scheduler.every @interval, overlap: false, job: true do
           ping
         end
       end
 
       def ping_by_record_type
-        case @dns_service.record_type
+        case @record_type
         when :A
-          a_ping(@dns_service.resource)
+          a_ping(@resource)
         when :AAAA
-          aaaa_ping(@dns_service.resource)
+          aaaa_ping(@resource)
         when :MX
-          mx_ping(@dns_service.resource)
+          mx_ping(@resource)
         when :NS
-          ns_ping(@dns_service.resource)
+          ns_ping(@resource)
         when :CNAME
-          cname_ping(@dns_service.resource)
+          cname_ping(@resource)
         else
           raise ArgumentError, "Undefined DNS Record Type"
         end
       end
 
-      def ping
-        if _ping
-          ping_success_callbacks("pinging #{@dns_service.resource_name} at #{Time.now} successful")
-        else
-          raise_error_level
-          ping_failure_callbacks("pinging #{@dns_service.resource_name} at #{Time.now} failed")
-        end
-      end
-
     private
-
-      def ping_success_callbacks(message)
-        log.info message
-      end
-
-      def ping_failure_callbacks(message)
-        log.info message
-        save_dns_record_to_db(message)
-      end
 
       def save_dns_record_to_db(message)
         persistence_service = Puptime::Persistence::Service.find_by(name: @name)
@@ -86,7 +66,7 @@ module Puptime
       def parse_dns_params(options)
         results = options["results"].split(",").map(&:strip)
         match = %w[true 1].include? options["match"]
-        DNSService.new(options["resource"], options["record_type"].to_sym, results, match)
+        return options["resource"], options["record_type"].to_sym, results, match
       end
 
       def mx_ping(resource)
@@ -110,11 +90,11 @@ module Puptime
       end
 
       def _ping
-        if @dns_service.match
-          ping_by_record_type.any?
-        else
+        if @match
           ping_result = ping_by_record_type
-          ping_result.sort == @dns_service.results.sort
+          ping_result.sort == @results.sort
+        else
+          ping_by_record_type.any?
         end
       end
     end

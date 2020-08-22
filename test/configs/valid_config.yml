@@ -1,0 +1,58 @@
+---
+monitors:
+  -
+    group: pavan
+    interval: 3s
+    name: tcp-1
+    options:
+      ip_addr: localhost
+      port: 3306
+    type: TCP
+
+  -
+    group: pavan
+    interval: 5s
+    name: dns-1
+    options:
+      record_type: NS
+      resource: google.com
+      results: "ns3.google.com, ns4.google.com, ns2.google.com"
+    type: DNS
+
+  -
+    group: pavan
+    interval: 3s
+    name: dns-2
+    options:
+      record_type: NS
+      resource: google.com
+      results: "ns3.google.com, ns4.google.com, ns2.google.com, ns1.google.com"
+      match: 1
+    type: DNS
+
+  -
+    group: pavan
+    interval: 2s
+    name: redis-1
+    options:
+      ip_addr: localhost
+      port: 6379
+      db: 15
+    type: Redis
+
+notifications:
+  -
+    channel: email
+    to: abc@gmail.com
+    from: pqr@gmail.com
+    delivery_method: smtp
+    address: smtp.gmail.com
+    port: 587
+    user_name: vachhanihpavan
+    password: 1234
+    authentication: plain
+    enable_starttls_auto: true
+
+  -
+    channel: teams
+    api_key: skfjhsjicnfiHIUHSLKUEZn2134

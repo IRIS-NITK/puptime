@@ -1,12 +1,14 @@
 # frozen_string_literal: true
 
+require "after_do"
 module Puptime
   class Service
     # Base class
     class Base
+      extend AfterDo
+
       ERROR_LEVEL = { 0 => "Normal", 1 => "Warning", 2 => "Severe", 3 => "Boom Boom Ciao" }
-      attr_reader :name, :group, :interval, :scheduler
-      attr_accessor :scheduler_job
+      attr_reader :name, :group, :interval, :scheduler, :error_level
 
       IP_REGEX = /(?:(?-mix:\A((?x-mi:0
                |1(?:[0-9][0-9]?)?
@@ -46,14 +48,16 @@ module Puptime
         @group = options[:group] || nil
         @type = type
         @interval = interval
-        @scheduler_job = nil
         @scheduler = Rufus::Scheduler.singleton
         @error_level = 0
-        save_service_to_db
       end
 
       def raise_error_level
         @error_level += 1 if @error_level < 3
+      end
+
+      def ping
+        _ping ? :success : :failure
       end
 
       def self.validate_ip_addr(ip_addr)
@@ -62,6 +66,18 @@ module Puptime
 
       def self.validate_url(url)
         raise ValidationError, "URL invalid #{@name}" unless Puptime::Service::Base::URL_REGEX.match? url
+      end
+
+      after :ping do |*, _name, status, obj|
+        case status
+        when :success
+          obj.log.info "SUCCESS - #{obj.resource_name}"
+        when :failure
+          obj.log.info "FAILED - #{obj.resource_name}"
+          obj.raise_error_level
+        else
+          obj.log.error "UNKNOWN STATUS #{obj.resource_name}"
+        end
       end
 
     private
