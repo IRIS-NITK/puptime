@@ -14,7 +14,6 @@ module Puptime
 
       def run
         serviceset = setup
-        set_pid
         # setup_database
         trap "SIGINT" do
           Puptime::CLI::Stop.run(serviceset.services)
@@ -28,8 +27,8 @@ module Puptime
 
       def setup
         set_pid
-        serviceset = setup_serviceset
         setup_logging
+        serviceset = setup_serviceset
         setup_notifier
         @cli.say("Starting puptime!", :green)
         serviceset
@@ -47,12 +46,12 @@ module Puptime
       end
 
       def setup_logging
-        log_file = File.expand_path("~/.puptime/server.log").freeze
+        log_file = File.expand_path(@options[:log_file] || Puptime::Constant::LOG_FILE_PATH).freeze
         Puptime::Logging.setup_logger(log_file)
       end
 
       def set_pid
-        pid_file = File.expand_path("~/.puptime/pid.log").freeze
+        pid_file = File.expand_path(@options[:pid_file] || Puptime::Constant::PID_FILE_PATH).freeze
         File.open(pid_file, "w") {|file| file.write(Process.pid) }
       end
 

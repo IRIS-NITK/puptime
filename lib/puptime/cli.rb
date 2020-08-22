@@ -3,6 +3,7 @@
 require "puptime"
 require "thor"
 require "thor/error"
+require "puptime/constant"
 
 module Puptime
   #:nodoc:
@@ -34,6 +35,9 @@ module Puptime
 
     desc "start", "Starts your puptime monitors"
     method_option :config_file, type: :string, default: Puptime::Configuration::DEFAULT_FILE, desc: "Config file to load when starting"
+    method_option :log_file, type: :string, default: Puptime::Constant::LOG_FILE_PATH, desc: "File to write logs"
+    method_option :pid_file, type: :string, default: Puptime::Constant::PID_FILE_PATH, desc: "File to store Process ID"
+
     def start
       Puptime::CLI::Start.new(self, options).run
     end

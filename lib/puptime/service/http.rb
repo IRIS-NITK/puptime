@@ -8,48 +8,50 @@ module Puptime
     # TCP service
     class HTTP < Puptime::Service::Base
       include Puptime::Logging
-      attr_reader :http_service
-
-      HTTPService = Struct.new(:url, :method, :code, :headers, :options) do
-        def resource_name
-          method.to_s.upcase + " " + url
-        end
-      end
+      attr_reader :url, :request_method, :response_code, :headers, :options
 
       def initialize(name, id, type, interval, options = {})
         super
         raise ParamMissingError, @name unless options["url"] && options["request-method"]
 
-        @http_service = parse_http_params(options)
+        @url, @request_method, @response_code, @headers, @options = parse_http_params(options)
+      end
+
+      def resource_name
+        @request_method.to_s.upcase + " " + @url
       end
 
       def run
-        @scheduler_job_id = @scheduler.every @interval, overlap: false, job: true do
+        @scheduler.every @interval, overlap: false, job: true do
           ping
         end
       end
 
       def ping
-        request = build_request(@http_service)
-        response = request.run
-        validate_response(response)
+        _ping ? :success : :failure
       end
 
     private
 
-      def build_request(http_service)
-        Typhoeus::Request.new(http_service.url, build_request_options(http_service))
+      def build_request
+        Typhoeus::Request.new(@url, build_request_options)
       end
 
-      def build_request_options(http_service)
+      def _ping
+        request = build_request
+        response = request.run
+        validate_response(response)
+      end
+
+      def build_request_options
         options = {}
-        options[:method] = http_service.method
-        options[:body] = http_service.options["body"] if http_service.options["body"]
-        options[:params] = http_service.options["params"] if http_service.options["params"]
-        options[:headers] = http_service.options["headers"] if http_service.options["headers"]
-        options[:username] = http_service.options["username"] if http_service.options["username"]
-        options[:password] = http_service.options["password"] if http_service.options["password"]
-        options[:followlocation] = true if http_service.options["follow-redirect"]
+        options[:method] = @request_method
+        options[:body] = @options["body"] if @options["body"]
+        options[:params] = @options["params"] if @options["params"]
+        options[:headers] = @options["headers"] if @options["headers"]
+        options[:username] = @options["username"] if @options["username"]
+        options[:password] = @options["password"] if @options["password"]
+        options[:followlocation] = true if @options["follow-redirect"]
         options[:timeout] = 5
         options
       end
@@ -57,34 +59,34 @@ module Puptime
       def validate_response(response)
         return unless validate_code(response)
 
-        if @http_service.options["has-text"]
+        if @options["has-text"]
           validate_text(response)
           return
         end
 
-        log.info "ping successful to #{@http_service.resource_name}"
+        log.info "ping successful to #{resource_name}"
       end
 
       def validate_code(response)
-        return true if response.response_code == @http_service.code
+        return true if response.response_code == @code
 
         raise_error_level
-        log.info "ping failed to #{@http_service.resource_name}"
+        log.info "ping failed to #{resource_name}"
         false
       end
 
       def validate_text(response)
-        if response.response_body.include? @http_service.options["has-text"]
-          log.info "ping successful to #{@http_service.resource_name} with text match"
+        if response.response_body.include? @options["has-text"]
+          log.info "ping successful to #{resource_name} with text match"
         else
           raise_error_level
-          log.info "ping successful to #{@http_service.resource_name} NO text match"
+          log.info "ping successful to #{resource_name} NO text match"
         end
       end
 
       def parse_http_params(options)
         Puptime::Service::Base.validate_url(options["url"])
-        HTTPService.new(options["url"], options["request-method"].downcase.to_sym, options["response-code"], options["headers"], options.slice("follow-redirect", "has-text", "params", "body", "username", "password"))
+        return options["url"], options["request-method"].downcase.to_sym, options["response-code"], options["headers"], options.slice("follow-redirect", "has-text", "params", "body", "username", "password")
       end
     end
   end
