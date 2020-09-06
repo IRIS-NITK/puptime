@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "typhoeus"
+require "puptime/notification_queue"
 
 module Puptime
   #:no_doc:
@@ -25,7 +26,9 @@ module Puptime
 
       def run
         @scheduler_job_id = @scheduler.every @interval, overlap: false, job: true do
-          ping
+          unless ping
+            Puptime::NotificationQueue.enqueue_notification(@http_service.resource_name)
+          end
         end
       end
 
@@ -62,23 +65,23 @@ module Puptime
           return
         end
 
-        log.info "ping successful to #{@http_service.resource_name}"
+        info service_name: @http_service.resource_name, service_message: "Ping Successful"
       end
 
       def validate_code(response)
         return true if response.response_code == @http_service.code
 
         raise_error_level
-        log.info "ping failed to #{@http_service.resource_name}"
+        error service_name: @http_service.resource_name, service_message: "Ping Failed"
         false
       end
 
       def validate_text(response)
         if response.response_body.include? @http_service.options["has-text"]
-          log.info "ping successful to #{@http_service.resource_name} with text match"
+          info service_name: @http_service.resource_name, service_message: "Text match Successful"
         else
           raise_error_level
-          log.info "ping successful to #{@http_service.resource_name} NO text match"
+          warn service_name: @http_service.resource_name, service_message: "Text match Failed"
         end
       end
 

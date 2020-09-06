@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "net/ping/tcp"
+require "puptime/notification_queue"
 
 module Puptime
   #:no_doc:
@@ -31,25 +32,18 @@ module Puptime
 
       def ping
         if Net::Ping::TCP.new(@tcp_service.ip_addr, @tcp_service.port).ping?
-          ping_success_callbacks("pinging #{@tcp_service.address} at #{Time.now} successful")
+          info service_name: @tcp_service.address
         else
           raise_error_level
-          ping_failure_callbacks("pinging #{@tcp_service.address} at #{Time.now} failed")
+          Puptime::NotificationQueue.enqueue_notification(@tcp_service.address)
+          error service_name: @tcp_service.address
         end
       end
 
     private
-
-      def ping_success_callbacks(message)
-        log.info message
-      end
-
-      def ping_failure_callbacks(message)
-        log.info message
-        save_tcp_record_to_db(message)
-      end
-
       def save_tcp_record_to_db(message)
+        return
+        # TODO: Fix persistence
         persistence_service = Puptime::Persistence::Service.find_by(name: @name)
         persistence_service.services_tcp.create(message: message) if persistence_service
       end

@@ -22,7 +22,7 @@ module Puptime
       end
 
       def send
-        log.info "Sending email to #{@to}"
+        info service_name: "e-mail"
       end
     end
   end

@@ -3,6 +3,7 @@
 require "puptime"
 require "puptime/cli/stop"
 require "active_record"
+require "logger"
 
 module Puptime
   # CLI class
@@ -14,7 +15,6 @@ module Puptime
 
       def run
         serviceset = setup
-        set_pid
         # setup_database
         trap "SIGINT" do
           Puptime::CLI::Stop.run(serviceset.services)
@@ -27,9 +27,7 @@ module Puptime
     private
 
       def setup
-        set_pid
         serviceset = setup_serviceset
-        setup_logging
         setup_notifier
         @cli.say("Starting puptime!", :green)
         serviceset
@@ -37,6 +35,9 @@ module Puptime
 
       def setup_serviceset
         @config = read_configuration
+
+        set_pid
+        Puptime::Logging.setup_logger(log_filepath: @config['log_file'], log_level: Logger::INFO)
         prepare_serviceset
       end
 
@@ -46,13 +47,8 @@ module Puptime
         raise Puptime::CLI::Error.new(@cli, e.message)
       end
 
-      def setup_logging
-        log_file = File.expand_path("~/.puptime/server.log").freeze
-        Puptime::Logging.setup_logger(log_file)
-      end
-
       def set_pid
-        pid_file = File.expand_path("~/.puptime/pid.log").freeze
+        pid_file = File.expand_path(@config['pid_file'] || "~/.puptime/pid.log").freeze
         File.open(pid_file, "w") {|file| file.write(Process.pid) }
       end
 
