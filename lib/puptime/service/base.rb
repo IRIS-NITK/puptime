@@ -1,4 +1,6 @@
 # frozen_string_literal: true
+#
+require 'uri'
 
 module Puptime
   class Service
@@ -39,8 +41,6 @@ module Puptime
       (\d+)\.(\d+)\.(\d+)\.(\d+)
       \z))))/.freeze
 
-      URL_REGEX = %r{^(http://www\.|https://www\.|http://|https://)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(/.*)?$}ix.freeze
-
       def initialize(name, group, type, interval, options = {})
         @name = name
         @group = options[:group] || nil
@@ -61,7 +61,7 @@ module Puptime
       end
 
       def self.validate_url(url)
-        raise ValidationError, "URL invalid #{@name}" unless Puptime::Service::Base::URL_REGEX.match? url
+        raise ValidationError, "URL invalid #{@name}" unless URI.regexp.match? url
       end
 
     private
