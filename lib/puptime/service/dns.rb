@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "resolv"
+require "puptime/notification_queue"
 
 module Puptime
   #:no_doc:
@@ -58,6 +59,7 @@ module Puptime
           info service_name: @dns_service.resource_name
         else
           error service_name: @dns_service.resource_name
+          Puptime::NotificationQueue.enqueue_notification(@dns_service.resource_name)
         end
       end
 

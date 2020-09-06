@@ -8,8 +8,8 @@ module Puptime
     class Teams < Puptime::Notifier::Base
       include Puptime::Logging
 
-      def initialize(message, configuration)
-        @channel = Teams.new(configuration["webhook_url"])
+      def initialize(message = "", configuration = [])
+        @channel = ::Teams.new(configuration["webhook_url"])
         super(message)
       end
 

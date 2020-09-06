@@ -30,6 +30,10 @@ module Puptime
       @queue.push(message)
     end
 
+    def self.enqueue_notification(message)
+      @instance.enqueue_notification(message)
+    end
+
     def notification_consumer
       @consumer = Thread.new { loop { process_notification } }
     end
@@ -52,8 +56,15 @@ module Puptime
 
     def process_notification
       message = @queue.pop(non_block = false) # rubocop:disable Lint/UselessAssignment # Suspend the thread when queue is empty
-      Puptime::Notifier::Email.new(message, @configuration.detect {|x| x["channel"] == "email" }).send
-      Puptime::Notifier::Teams.new(message, @configuration.detect {|x| x["channel"] == "teams" }).send
+      email_configuration = @configuration.detect {|x| x["channel"] == "email" }
+      if email_configuration
+        Puptime::Notifier::Email.new(message, email_configuration).send
+      end
+
+      teams_configuration = @configuration.detect {|x| x["channel"] == "teams" }
+      if teams_configuration
+        Puptime::Notifier::Teams.new(message, teams_configuration).send
+      end
     end
 
     def validate(configuration)
