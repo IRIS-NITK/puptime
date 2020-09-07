@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "redis"
+require "puptime/notification_queue"
 
 module Puptime
   #:no_doc:
@@ -30,22 +31,15 @@ module Puptime
 
       def ping
         if _ping
-          ping_success_callbacks("pinging #{@redis_service.resource_name} at #{Time.now} successful")
+          info service_name: @redis_service.resource_name
         else
           raise_error_level
-          ping_failure_callbacks("pinging #{@redis_service.resource_name} at #{Time.now} failed")
+          Puptime::NotificationQueue.enqueue_notification(@redis_service.resource_name)
+          error service_name: @redis_service.resource_name
         end
       end
 
     private
-
-      def ping_success_callbacks(message)
-        log.info message
-      end
-
-      def ping_failure_callbacks(message)
-        log.info message
-      end
 
       def validate_params(options)
         raise ParamMissingError, @name unless (options["ip_addr"]) && options["port"] && options["db"]

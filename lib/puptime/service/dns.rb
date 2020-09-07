@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "resolv"
+require "puptime/notification_queue"
 
 module Puptime
   #:no_doc:
@@ -55,25 +56,17 @@ module Puptime
 
       def ping
         if _ping
-          ping_success_callbacks("pinging #{@dns_service.resource_name} at #{Time.now} successful")
+          info service_name: @dns_service.resource_name
         else
-          raise_error_level
-          ping_failure_callbacks("pinging #{@dns_service.resource_name} at #{Time.now} failed")
+          error service_name: @dns_service.resource_name
+          Puptime::NotificationQueue.enqueue_notification(@dns_service.resource_name)
         end
       end
 
     private
-
-      def ping_success_callbacks(message)
-        log.info message
-      end
-
-      def ping_failure_callbacks(message)
-        log.info message
-        save_dns_record_to_db(message)
-      end
-
       def save_dns_record_to_db(message)
+        return
+        # TODO: Fix persistence
         persistence_service = Puptime::Persistence::Service.find_by(name: @name)
         persistence_service.services_dns.create(message: message) if persistence_service
       end
