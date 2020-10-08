@@ -11,7 +11,9 @@ module Puptime
       include Puptime::Logging
       attr_reader :tcp_service
 
-      TCPService = Struct.new(:ip_addr, :port) do
+      DEFAULT_TIMEOUT_DURATION = 5
+
+      TCPService = Struct.new(:ip_addr, :port, :timeout) do
         def address
           ip_addr + ":" + port.to_s
         end
@@ -22,6 +24,7 @@ module Puptime
         raise ParamMissingError, @name unless options["port"] && options["ip_addr"]
 
         @tcp_service = parse_tcp_params(options)
+        @tcp_service.timeout = @tcp_service.timeout&.to_i || DEFAULT_TIMEOUT_DURATION
       end
 
       def run
@@ -31,7 +34,7 @@ module Puptime
       end
 
       def ping
-        if Net::Ping::TCP.new(@tcp_service.ip_addr, @tcp_service.port).ping?
+        if Net::Ping::TCP.new(@tcp_service.ip_addr, @tcp_service.port, @tcp_service.timeout).ping?
           info service_name: @tcp_service.address
         else
           raise_error_level
@@ -50,7 +53,7 @@ module Puptime
 
       def parse_tcp_params(options)
         Puptime::Service::Base.validate_ip_addr(options["ip_addr"])
-        TCPService.new(options["ip_addr"], options["port"])
+        TCPService.new(options["ip_addr"], options["port"], options["timeout"])
       end
     end
   end

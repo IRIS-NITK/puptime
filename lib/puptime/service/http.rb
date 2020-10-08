@@ -11,6 +11,8 @@ module Puptime
       include Puptime::Logging
       attr_reader :http_service
 
+      DEFAULT_TIMEOUT_DURATION = 5
+
       HTTPService = Struct.new(:url, :method, :code, :headers, :options) do
         def resource_name
           method.to_s.upcase + " " + url
@@ -22,6 +24,7 @@ module Puptime
         raise ParamMissingError, @name unless options["url"] && options["request-method"]
 
         @http_service = parse_http_params(options)
+        @http_service.options["timeout"] = @http_service.options["timeout"]&.to_i || DEFAULT_TIMEOUT_DURATION
       end
 
       def run
@@ -53,7 +56,7 @@ module Puptime
         options[:username] = http_service.options["username"] if http_service.options["username"]
         options[:password] = http_service.options["password"] if http_service.options["password"]
         options[:followlocation] = true if http_service.options["follow-redirect"]
-        options[:timeout] = 5
+        options[:timeout] = http_service.options["timeout"]
         options
       end
 
@@ -87,7 +90,7 @@ module Puptime
 
       def parse_http_params(options)
         Puptime::Service::Base.validate_url(options["url"])
-        HTTPService.new(options["url"], options["request-method"].downcase.to_sym, options["response-code"], options["headers"], options.slice("follow-redirect", "has-text", "params", "body", "username", "password"))
+        HTTPService.new(options["url"], options["request-method"].downcase.to_sym, options["response-code"], options["headers"], options.slice("follow-redirect", "has-text", "params", "body", "username", "password", "timeout"))
       end
     end
   end

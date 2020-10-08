@@ -15,7 +15,9 @@ module Puptime
                        'MX': Resolv::DNS::Resource::IN::MX, 'CNAME': Resolv::DNS::Resource::IN::CNAME,
                        'NS': Resolv::DNS::Resource::IN::NS }
 
-      DNSService = Struct.new(:resource, :record_type, :results, :match) do
+      DEFAULT_TIMEOUT_DURATION = 5
+
+      DNSService = Struct.new(:resource, :record_type, :results, :match, :timeout) do
         def resource_name
           if match
             resource + "#" + record_type.to_s + " ==> " + results
@@ -38,17 +40,20 @@ module Puptime
       end
 
       def ping_by_record_type
+        dns = Resolv::DNS.new
+        dns.timeouts = @dns_service.timeout.to_i || self.class::DEFAULT_TIMEOUT_DURATION
+
         case @dns_service.record_type
         when :A
-          a_ping(@dns_service.resource)
+          a_ping(dns, @dns_service.resource)
         when :AAAA
-          aaaa_ping(@dns_service.resource)
+          aaaa_ping(dns, @dns_service.resource)
         when :MX
-          mx_ping(@dns_service.resource)
+          mx_ping(dns, @dns_service.resource)
         when :NS
-          ns_ping(@dns_service.resource)
+          ns_ping(dns, @dns_service.resource)
         when :CNAME
-          cname_ping(@dns_service.resource)
+          cname_ping(dns, @dns_service.resource)
         else
           raise ArgumentError, "Undefined DNS Record Type"
         end
@@ -82,24 +87,24 @@ module Puptime
         DNSService.new(options["resource"], options["record_type"].to_sym, results, match)
       end
 
-      def mx_ping(resource)
-        Resolv::DNS.new.getresources(resource, RECORD_TYPES[:MX]).map {|r| r.exchange.to_s }
+      def mx_ping(dns, resource)
+        dns.getresources(resource, RECORD_TYPES[:MX]).map {|r| r.exchange.to_s }
       end
 
-      def a_ping(resource)
-        Resolv::DNS.new.getresources(resource, RECORD_TYPES[:A]).map {|r| r.address.to_s }
+      def a_ping(dns, resource)
+        dns.getresources(resource, RECORD_TYPES[:A]).map {|r| r.address.to_s }
       end
 
-      def aaaa_ping(resource)
-        Resolv::DNS.new.getresources(resource, RECORD_TYPES[:AAAA]).map {|r| r.address.to_s }
+      def aaaa_ping(dns, resource)
+        dns.getresources(resource, RECORD_TYPES[:AAAA]).map {|r| r.address.to_s }
       end
 
-      def ns_ping(resource)
-        Resolv::DNS.new.getresources(resource, RECORD_TYPES[:NS]).map {|r| r.name.to_s }
+      def ns_ping(dns, resource)
+        dns.getresources(resource, RECORD_TYPES[:NS]).map {|r| r.name.to_s }
       end
 
-      def cname_ping(resource)
-        Resolv::DNS.new.getresources(resource, RECORD_TYPES[:CNAME]).map {|r| r.name.to_s }
+      def cname_ping(dns, resource)
+        dns.getresources(resource, RECORD_TYPES[:CNAME]).map {|r| r.name.to_s }
       end
 
       def _ping
