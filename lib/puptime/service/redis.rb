@@ -11,6 +11,8 @@ module Puptime
       include Puptime::Logging
       attr_reader :redis_service
 
+      DEFAULT_TIMEOUT_DURATION = 1
+
       RedisService = Struct.new(:ip_addr, :port, :db, :password) do
         def resource_name
           ip_addr + ":" + port.to_s + "/" + db.to_s
@@ -21,6 +23,7 @@ module Puptime
         super
         validate_params(options)
         @redis_service = parse_redis_params(options)
+        @redis_service.options["timeout"] = @redis_service.options["timeout"]&.to_i || DEFAULT_TIMEOUT_DURATION
       end
 
       def run
@@ -46,12 +49,12 @@ module Puptime
       end
 
       def parse_redis_params(options)
-        RedisService.new(options["ip_addr"], options["port"].to_i, options["db"].to_i, options["password"])
+        RedisService.new(options["ip_addr"], options["port"].to_i, options["db"].to_i, options["password"], options["timeout"])
       end
 
       def _ping
         begin
-          redis = ::Redis.new(host: @redis_service.ip_addr, port: @redis_service.port, db: @redis_service.db, password: @redis_service.password, timeout: 1)
+          redis = ::Redis.new(host: @redis_service.ip_addr, port: @redis_service.port, db: @redis_service.db, password: @redis_service.password, timeout: @redis_service.timeout)
           redis.ping
           true
         rescue StandardError
