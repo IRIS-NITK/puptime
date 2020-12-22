@@ -25,7 +25,9 @@ module Puptime
 
       def run
         @scheduler_job_id = @scheduler.every @interval, overlap: false, job: true do
-          Puptime::Service::Base.notifier_base(@http_service.resource_name) unless ping
+          unless ping
+            Puptime::NotificationQueue.enqueue_notification(@http_service.resource_name)
+          end
         end
       end
 

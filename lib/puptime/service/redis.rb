@@ -22,12 +22,18 @@ module Puptime
         @redis_service = parse_redis_params(options)
       end
 
-      def self.ping
+      def run
+        @scheduler_job_id = @scheduler.every @interval, overlap: false, job: true do
+          ping
+        end
+      end
+
+      def ping
         if _ping
           info service_name: @redis_service.resource_name
         else
           raise_error_level
-          Puptime::Service::Base.notifier_base(@redis_service.resource_name)
+          Puptime::NotificationQueue.enqueue_notification(@redis_service.resource_name)
           error service_name: @redis_service.resource_name
         end
       end

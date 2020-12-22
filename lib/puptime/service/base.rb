@@ -56,19 +56,6 @@ module Puptime
         @error_level += 1 if @error_level < 3
       end
 
-      def run
-        @scheduler_job_id = @scheduler.every @interval, overlap: false, job: true do
-          Puptime::Service::DNS.ping
-          Puptime::Service::TCP.ping
-          Puptime::Service::Redis.ping
-        end
-      end
-
-      # Changes to be done to add all error notifications and pass it as an argument
-      def notifier_base(service_name)
-        Puptime::NotificationQueue.enqueue_notification(service_name)
-      end
-
       def self.error_level
         error = { 0 => "Normal", 1 => "Warning", 2 => "Severe", 3 => "Boom Boom Ciao" }
         error

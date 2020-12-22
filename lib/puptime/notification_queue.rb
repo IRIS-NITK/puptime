@@ -15,6 +15,7 @@ module Puptime
     attr_reader :configuration
 
     @instance_mutex = Mutex.new
+
     private_class_method :new
 
     def initialize(configuration)

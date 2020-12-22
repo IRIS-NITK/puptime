@@ -23,12 +23,18 @@ module Puptime
         @tcp_service = parse_tcp_params(options)
       end
 
-      def self.ping
+      def run
+        @scheduler_job_id = @scheduler.every @interval, overlap: false, job: true do
+          ping
+        end
+      end
+
+      def ping
         if Net::Ping::TCP.new(@tcp_service.ip_addr, @tcp_service.port).ping?
           info service_name: @tcp_service.address
         else
           raise_error_level
-          Puptime::Service::Base.notifier_base(@tcp_service.address)
+          Puptime::NotificationQueue.enqueue_notification(@tcp_service.address)
           error service_name: @tcp_service.address
         end
       end
