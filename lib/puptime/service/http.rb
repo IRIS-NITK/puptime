@@ -23,13 +23,7 @@ module Puptime
         @http_service = parse_http_params(options)
       end
 
-      def run
-        @scheduler_job_id = @scheduler.every @interval, overlap: false, job: true do
-
-        end
-      end
-
-      def ping
+      def self.ping
         request = build_request(@http_service)
         response = request.run
         validate_response(response)

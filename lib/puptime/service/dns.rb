@@ -30,12 +30,6 @@ module Puptime
         @dns_service = parse_dns_params(options)
       end
 
-      def run
-        @scheduler_job_id = @scheduler.every @interval, overlap: false, job: true do
-          ping
-        end
-      end
-
       def ping_by_record_type
         case @dns_service.record_type
         when :A
@@ -53,7 +47,7 @@ module Puptime
         end
       end
 
-      def ping
+      def self.ping
         if _ping
           info service_name: @dns_service.resource_name
         else

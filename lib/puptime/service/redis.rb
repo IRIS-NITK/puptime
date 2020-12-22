@@ -22,13 +22,7 @@ module Puptime
         @redis_service = parse_redis_params(options)
       end
 
-      def run
-        @scheduler_job_id = @scheduler.every @interval, overlap: false, job: true do
-          ping
-        end
-      end
-
-      def ping
+      def self.ping
         if _ping
           info service_name: @redis_service.resource_name
         else

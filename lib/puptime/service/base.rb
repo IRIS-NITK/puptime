@@ -56,6 +56,15 @@ module Puptime
         @error_level += 1 if @error_level < 3
       end
 
+      def run
+        @scheduler_job_id = @scheduler.every @interval, overlap: false, job: true do
+          Puptime::Service::DNS.ping
+          Puptime::Service::TCP.ping
+          Puptime::Service::Redis.ping
+          Puptime::Service::Base.notifier_base(@http_service.resource_name) unless Puptime::Service::HTTP.ping
+        end
+      end
+
       def notifier_base(service_name)
         Puptime::NotificationQueue.enqueue_notification(service_name)
       end
