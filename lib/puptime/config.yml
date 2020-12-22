@@ -58,5 +58,6 @@ notifications:
 
   -
     message:
+      misc:
       service_name:
       error_level:

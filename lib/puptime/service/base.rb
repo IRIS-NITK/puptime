@@ -61,10 +61,10 @@ module Puptime
           Puptime::Service::DNS.ping
           Puptime::Service::TCP.ping
           Puptime::Service::Redis.ping
-          Puptime::Service::Base.notifier_base(@http_service.resource_name) unless Puptime::Service::HTTP.ping
         end
       end
 
+      # Changes to be done to add all error notifications and pass it as an argument
       def notifier_base(service_name)
         Puptime::NotificationQueue.enqueue_notification(service_name)
       end

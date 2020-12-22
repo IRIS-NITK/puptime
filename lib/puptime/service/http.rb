@@ -23,7 +23,13 @@ module Puptime
         @http_service = parse_http_params(options)
       end
 
-      def self.ping
+      def run
+        @scheduler_job_id = @scheduler.every @interval, overlap: false, job: true do
+          Puptime::Service::Base.notifier_base(@http_service.resource_name) unless ping
+        end
+      end
+
+      def ping
         request = build_request(@http_service)
         response = request.run
         validate_response(response)

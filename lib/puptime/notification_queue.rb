@@ -54,7 +54,7 @@ module Puptime
     end
 
     # Changes to be done to append all service names and error level to message_config
-    # For event driven approach, changes email.rb and teams.rb to call hooks in notifier/base.rb
+    # For event driven approach, changes in email.rb and teams.rb to call hooks in notifier/base.rb
     def process_notification
       message = @queue.pop(non_block = false) # rubocop:disable Lint/UselessAssignment # Suspend the thread when queue is empty
       message_config = @configuration.map {|x| x["message"] }
