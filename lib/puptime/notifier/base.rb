@@ -8,6 +8,11 @@ module Puptime
       def initialize(message)
         @message = message
       end
+
+      def error_level
+        error = Puptime::Service::Base.return_error_level
+        @message += "Error level #{error}"
+      end
     end
   end
 end

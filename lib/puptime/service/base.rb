@@ -1,12 +1,12 @@
 # frozen_string_literal: true
 #
 require 'uri'
+require "puptime/notification_queue"
 
 module Puptime
   class Service
     # Base class
     class Base
-      ERROR_LEVEL = { 0 => "Normal", 1 => "Warning", 2 => "Severe", 3 => "Boom Boom Ciao" }
       attr_reader :name, :group, :interval, :scheduler
       attr_accessor :scheduler_job
 
@@ -54,6 +54,19 @@ module Puptime
 
       def raise_error_level
         @error_level += 1 if @error_level < 3
+      end
+
+      def notifier_base(service_name)
+        Puptime::NotificationQueue.enqueue_notification(service_name)
+      end
+
+      def self.error_level
+        error = { 0 => "Normal", 1 => "Warning", 2 => "Severe", 3 => "Boom Boom Ciao" }
+        error
+      end
+
+      def self.return_error_level
+        self.class.error_level[@error_level]
       end
 
       def self.validate_ip_addr(ip_addr)

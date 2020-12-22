@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require "redis"
-require "puptime/notification_queue"
 
 module Puptime
   #:no_doc:
@@ -34,7 +33,7 @@ module Puptime
           info service_name: @redis_service.resource_name
         else
           raise_error_level
-          Puptime::NotificationQueue.enqueue_notification(@redis_service.resource_name)
+          Puptime::Service::Base.notifier_base(@redis_service.resource_name)
           error service_name: @redis_service.resource_name
         end
       end

@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require "typhoeus"
-require "puptime/notification_queue"
 
 module Puptime
   #:no_doc:
@@ -26,9 +25,7 @@ module Puptime
 
       def run
         @scheduler_job_id = @scheduler.every @interval, overlap: false, job: true do
-          unless ping
-            Puptime::NotificationQueue.enqueue_notification(@http_service.resource_name)
-          end
+
         end
       end
 

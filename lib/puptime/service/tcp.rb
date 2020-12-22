@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require "net/ping/tcp"
-require "puptime/notification_queue"
 
 module Puptime
   #:no_doc:
@@ -35,7 +34,7 @@ module Puptime
           info service_name: @tcp_service.address
         else
           raise_error_level
-          Puptime::NotificationQueue.enqueue_notification(@tcp_service.address)
+          Puptime::Service::Base.notifier_base(@tcp_service.address)
           error service_name: @tcp_service.address
         end
       end

@@ -15,7 +15,6 @@ module Puptime
     attr_reader :configuration
 
     @instance_mutex = Mutex.new
-
     private_class_method :new
 
     def initialize(configuration)
@@ -54,17 +53,15 @@ module Puptime
       @queue.empty?
     end
 
+    # Changes to be done to append all service names and error level to message_config
+    # For event driven approach, changes email.rb and teams.rb to call hooks in notifier/base.rb
     def process_notification
       message = @queue.pop(non_block = false) # rubocop:disable Lint/UselessAssignment # Suspend the thread when queue is empty
+      message_config = @configuration.map {|x| x["message"] }
       email_configuration = @configuration.detect {|x| x["channel"] == "email" }
-      if email_configuration
-        Puptime::Notifier::Email.new(message, email_configuration).send
-      end
-
       teams_configuration = @configuration.detect {|x| x["channel"] == "teams" }
-      if teams_configuration
-        Puptime::Notifier::Teams.new(message, teams_configuration).send
-      end
+      Puptime::Notifier::Email.new(message, email_configuration).send if email_configuration
+      Puptime::Notifier::Teams.new(message, teams_configuration).send if teams_configuration
     end
 
     def validate(configuration)
