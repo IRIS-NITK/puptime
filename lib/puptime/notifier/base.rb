@@ -9,7 +9,7 @@ module Puptime
         @message = message
         notification = JSON.parse(File.read('teams.json'))
         notification["teams"]["text"] = @message
-        notification["teams"]["error"] = Puptime::Service::Base.return_error_level
+        notification["teams"]["error"] = Puptime::Service::Base.error_level
         File.write('./teams.json', JSON.pretty_generate(notification))
       end
     end
