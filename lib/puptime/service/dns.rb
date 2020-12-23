@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "resolv"
+require "puptime/notification_queue"
 
 module Puptime
   #:no_doc:
@@ -30,6 +31,12 @@ module Puptime
         @dns_service = parse_dns_params(options)
       end
 
+      def run
+        @scheduler_job_id = @scheduler.every @interval, overlap: false, job: true do
+          ping
+        end
+      end
+
       def ping_by_record_type
         case @dns_service.record_type
         when :A
@@ -47,19 +54,19 @@ module Puptime
         end
       end
 
-      def self.ping
+      def ping
         if _ping
           info service_name: @dns_service.resource_name
         else
           error service_name: @dns_service.resource_name
-          Puptime::Service::Base.notifier_base(@dns_service.resource_name)
+          Puptime::NotificationQueue.enqueue_notification(@dns_service.resource_name)
         end
       end
 
     private
-
       def save_dns_record_to_db(message)
         return
+        # TODO: Fix persistence
         persistence_service = Puptime::Persistence::Service.find_by(name: @name)
         persistence_service.services_dns.create(message: message) if persistence_service
       end

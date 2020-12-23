@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "typhoeus"
+require "puptime/notification_queue"
 
 module Puptime
   #:no_doc:
