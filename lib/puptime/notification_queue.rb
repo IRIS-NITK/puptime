@@ -54,11 +54,8 @@ module Puptime
       @queue.empty?
     end
 
-    # Changes to be done to append all service names and error level to message_config
-    # For event driven approach, changes in email.rb and teams.rb to call hooks in notifier/base.rb
     def process_notification
       message = @queue.pop(non_block = false) # rubocop:disable Lint/UselessAssignment # Suspend the thread when queue is empty
-      message_config = @configuration.map {|x| x["message"] }
       email_configuration = @configuration.detect {|x| x["channel"] == "email" }
       teams_configuration = @configuration.detect {|x| x["channel"] == "teams" }
       Puptime::Notifier::Email.new(message, email_configuration).send if email_configuration

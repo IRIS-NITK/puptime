@@ -5,7 +5,7 @@ module Puptime
   class Notifier
     autoload :Base,  "puptime/notifier/base"
     autoload :Email, "puptime/notifier/email"
-    autoload :Teams, "puptime/notifier/teams"
+    autoload :Teams, "puptime/notifier/notification"
 
     # Missing parameter
     class ParamMissingError < StandardError

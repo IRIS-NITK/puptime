@@ -7,11 +7,10 @@ module Puptime
       attr_reader :message
       def initialize(message)
         @message = message
-      end
-
-      def error_level
-        error = Puptime::Service::Base.return_error_level
-        @message += "Error level #{error}"
+        notification = JSON.parse(File.read('teams.json'))
+        notification["teams"]["text"] = @message
+        notification["teams"]["error"] = Puptime::Service::Base.return_error_level
+        File.write('./teams.json', JSON.pretty_generate(notification))
       end
     end
   end

@@ -57,8 +57,7 @@ module Puptime
       end
 
       def self.error_level
-        error = { 0 => "Normal", 1 => "Warning", 2 => "Severe", 3 => "Boom Boom Ciao" }
-        error
+        { 0 => "Normal", 1 => "Warning", 2 => "Severe", 3 => "Boom Boom Ciao" }
       end
 
       def self.return_error_level
