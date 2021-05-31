@@ -26,8 +26,10 @@ module Puptime
 
       def run
         @scheduler_job_id = @scheduler.every @interval, overlap: false, job: true do
-          unless ping
-            Puptime::NotificationQueue.enqueue_notification(@http_service.resource_name)
+          success, status_code = ping
+          status_code = "NO RESPONSE" if status_code == 0
+          unless success
+            Puptime::NotificationQueue.enqueue_notification(@http_service.resource_name + " " + status_code.to_s)
           end
         end
       end
@@ -72,7 +74,7 @@ module Puptime
         return true if response.response_code == @http_service.code
 
         raise_error_level
-        error service_name: @http_service.resource_name, service_message: "Ping Failed"
+        error service_name: @http_service.resource_name, service_message: "Ping Failed " + response.response_code.to_s
         false
       end
 
